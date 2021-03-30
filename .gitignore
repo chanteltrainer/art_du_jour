@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+#ignore twitter secrets
+*.secrets
+
+# Environments
+venv/
+
+.vscode
+
+# File is too large for github
+MetObjects.csv
