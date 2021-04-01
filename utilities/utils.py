@@ -3,8 +3,8 @@
 import tweepy
 
 # From your app settings page
-CONSUMER_KEY = "XN3fr1J5qiwGa4GDG2X5fvIEz"
-CONSUMER_SECRET = "tmGESo2VOXvwmDRhxI6x7QIVYDl6HEBDAkrDFcyq4RHkmUw3x4"
+CONSUMER_KEY = ""
+CONSUMER_SECRET = ""
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.secure = True
