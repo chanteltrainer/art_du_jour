@@ -3,6 +3,7 @@ import schedule
 import random
 from datetime import datetime, timedelta, timezone
 from art import Art, get_line_count, get_row
+from utilities.utils import get_secrets, authorize_user
 
 
 class Bot:
@@ -24,7 +25,7 @@ class Bot:
 
 
     def run_retweet(self):
-        SEARCH_TERMS = ['Art', 'Painting', 'En Plein Air', 'Alla Prima']
+        SEARCH_TERMS = ['Art', 'Painting', 'En Plein Air', 'Alla Prima', "sketch", "drawing", "sculpture"]
         try:
             found_tweets = []
             for term in SEARCH_TERMS:
@@ -32,7 +33,7 @@ class Bot:
                                                 result_type='recent', count=1000)
             # remove the unneeded things
             found_tweets = [t._json for t in found_tweets]
-            # make sure not to old
+            # make sure not too old
             found_tweets = [t for t in found_tweets if self.str_to_time(
                 t['created_at']) > self.last_retweet_time]
             # make sure they contain a link/image/video
@@ -42,7 +43,7 @@ class Bot:
                 'retweeted_status' in t)]
             # select most popular one
             tweet = max(found_tweets, key=self.selection_function)
-            # let's retweet this one
+
             self.api.retweet(tweet['id'])
             self.last_retweet_time = datetime.now(timezone.utc)
             print(f"BOT SUCCESSFUL RETWEET AT {self.last_retweet_time}")
@@ -52,10 +53,11 @@ class Bot:
     def __init__(self):
         # Authenticate to Twitter
         self.secrets = get_secrets()
-        auth = tweepy.OAuthHandler(secrets['consumer key'], secrets['consumer secret']) #consumer key, consumer secret
-        auth.set_access_token(secrets['access key'], secrets['access secret']) #access key, secret    
+        auth = tweepy.OAuthHandler(self.secrets['consumer key'], self.secrets['consumer secret']) #consumer key, consumer secret
+        auth.set_access_token(self.secrets['access key'], self.secrets['access secret']) #access key, secret    
         self.art_file = "MetObjects.csv"
         self.api = tweepy.API(auth)
+
         self.str_to_time = lambda x: datetime.strptime(
             x, '%a %b %d %H:%M:%S %z %Y')
         self.selection_function = lambda x: int(
@@ -65,24 +67,15 @@ class Bot:
         self.total_line_count = get_line_count(self.art_file)
         
         #self.run_art_tweet()
-        #self.run_art_retweet()
+        self.run_retweet()
 
         schedule.every().day.at("16:00").do(self.run_retweet) #9am PST
         schedule.every().day.at("00:30").do(self.run_art_tweet) #5:30pm PST
         print("successfully booted bot")
 
-def get_secrets():
-    secrets = {}
-    with open('twitter.secrets') as f:
-        lines = f.readlines()
-        secrets['consumer key'] = lines[0].split(':')[1].strip()
-        secrets['consumer secret'] = lines[1].split(':')[1].strip()
-        secrets['access key'] = lines[2].split(':')[1].strip()
-        secrets['access secret'] = lines[3].split(':')[1].strip()
-    return secrets
-        
 
 if __name__ == '__main__':
+
     bot = Bot()
     while True:
         schedule.run_pending()
